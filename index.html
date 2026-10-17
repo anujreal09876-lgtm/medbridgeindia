@@ -421,64 +421,64 @@
   // Footer year
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Form handling: validate, then open a pre-filled email to the business address.
-  var CONTACT_EMAIL = "anujreal09876@gmail.com";
+ 
+  // Form handling: send requests to the business email.
   var form = document.getElementById('requestForm');
   var status = document.getElementById('formStatus');
 
-  form.addEventListener('submit', function(e){
+  form.addEventListener('submit', function(e) {
     e.preventDefault();
     status.className = 'form-status';
     status.textContent = '';
 
-    if(!form.checkValidity()){
+    if (!form.checkValidity()) {
       form.reportValidity();
       status.classList.add('err');
-      status.textContent = 'Please complete all required fields before submitting.';
+      status.textContent = 'Please complete all required fields.';
       return;
     }
+
     var data = new FormData(form);
-    var subject = 'Medical Assistance Request - ' + data.get('name');
-    var bodyLines = [
-      'Full Name: ' + data.get('name'),
-      'Country: ' + data.get('country'),
-      'WhatsApp / Phone: ' + data.get('phone'),
-      'Email: ' + data.get('email'),
-      'Required Specialty: ' + data.get('specialty'),
-      'Planned Travel to India: ' + data.get('travel'),
-      '',
-      'Requirement:',
-      data.get('message')
-    ];
-    var mailto = 'mailto:' + CONTACT_EMAIL
-      + '?subject=' + encodeURIComponent(subject)
-      + '&body=' + encodeURIComponent(bodyLines.join('\n'));
+    var payload = {
+      name: data.get('name'),
+      country: data.get('country'),
+      phone: data.get('phone'),
+      email: data.get('email'),
+      specialty: data.get('specialty'),
+      travel: data.get('travel'),
+      message: data.get('message'),
+      _subject: 'Medical Assistance Request - ' + data.get('name'),
+      _template: 'table'
+    };
 
-    window.location.href = mailto;
-    status.classList.add('ok');
-        var formData = new FormData(form);
-    formData.set('form-name', 'medical-assistance');
+    status.textContent = 'Submitting your request...';
 
-    fetch('/', {
+    fetch('https://formsubmit.co/ajax/anujreal09876@gmail.com', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      body: new URLSearchParams(formData).toString()
+      body: JSON.stringify(payload)
     })
     .then(function(response) {
-      if (!response.ok) {
+      if (!response.ok) throw new Error('Submission failed');
+      return response.json();
+    })
+    .then(function(result) {
+      if (result.success !== true && result.success !== 'true') {
         throw new Error('Submission failed');
       }
       status.classList.add('ok');
       status.textContent = 'Thank you! Your request has been submitted successfully.';
       form.reset();
     })
-    .catch(function(error) {
+    .catch(function() {
       status.classList.add('err');
-      status.textContent = 'Submission failed. Please try again.';
+      status.textContent = 'Submission failed. Please email us directly at anujreal09876@gmail.com.';
     });
   });
+
 })();
 </script>
 </body>
